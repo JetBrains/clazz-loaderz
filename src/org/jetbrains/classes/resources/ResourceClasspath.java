@@ -17,9 +17,11 @@
 package org.jetbrains.classes.resources;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import sun.misc.CompoundEnumeration;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 
@@ -30,17 +32,22 @@ import java.util.Enumeration;
  */
 public class ResourceClasspath {
   @NotNull
-  public Enumeration<URL> getResources(@NotNull String name) {
+  public Enumeration<URL> getResources(@NotNull String name) throws IOException {
     return new CompoundEnumeration<URL>(new Enumeration[0]);
   }
 
-  @Nullable
-  public Resource getResource(@NotNull final String name) {
-    return null;
+  @NotNull
+  public InputStream getResourceAsStream(@NotNull final String name) throws IOException {
+    throw new FileNotFoundException();
   }
 
-  @Nullable
-  public ResourceClass getClassResource(@NotNull final String classResource) {
-    return null;
+  @NotNull
+  public URL getResourceAsURL(@NotNull final String name) throws IOException {
+    throw new FileNotFoundException();
+  }
+
+  @NotNull
+  public byte[] getClassResource(@NotNull final String classResource) throws IOException {
+    throw new FileNotFoundException();
   }
 }

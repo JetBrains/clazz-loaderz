@@ -60,14 +60,29 @@ public class ResourceClassLoader extends ClassLoader {
   @Nullable
   private Class<?> findClassImpl(@NotNull final String name) {
     final String classResource = name.replace('.', '/').concat(CLASS_EXTENSION);
-    final ResourceClass res = myClasspath.getClassResource(classResource);
-    if (res == null) return null;
 
+    final byte[] res;
     try {
-      return defineClass(name, res);
+      res = myClasspath.getClassResource(classResource);
     } catch (IOException e) {
       return null;
     }
+
+    final int i = name.lastIndexOf('.');
+    if (i >= 0) {
+      final String pkgname = name.substring(0, i);
+      // Check if package already loaded.
+      final Package pkg = getPackage(pkgname);
+      if (pkg == null) {
+        try {
+          definePackage(pkgname, null, null, null, null, null, null, null);
+        } catch (IllegalArgumentException e) {
+          // do nothing, package already defined by some other thread
+        }
+      }
+    }
+
+    return defineClass(name, res, 0, res.length);
   }
 
   @Override
@@ -85,40 +100,20 @@ public class ResourceClassLoader extends ClassLoader {
     return found;
   }
 
-  @NotNull
-  private Class<?> defineClass(@NotNull final String name,
-                               @NotNull final ResourceClass res) throws IOException {
-    final int i = name.lastIndexOf('.');
-    if (i >= 0) {
-      final String pkgname = name.substring(0, i);
-      // Check if package already loaded.
-      final Package pkg = getPackage(pkgname);
-      if (pkg == null) {
-        try {
-          definePackage(pkgname, null, null, null, null, null, null, null);
-        } catch (IllegalArgumentException e) {
-          // do nothing, package already defined by some other thread
-        }
-      }
-    }
-
-    final byte[] b = res.getBytes();
-    return defineClass(name, b, 0, b.length);
-  }
-
   @Override
   @Nullable
   public URL findResource(@NotNull final String name) {
-    final Resource res = getResourceImpl(name);
-    if (res == null) return null;
-    return res.getURL();
+    try {
+      return myClasspath.getResourceAsURL(trimSlashes(name));
+    } catch (IOException e) {
+      return null;
+    }
   }
 
-  @Nullable
-  private Resource getResourceImpl(@NotNull final String name) {
-    String n = name;
+  @NotNull
+  private String trimSlashes(@NotNull String n) {
     while (n.startsWith("/")) n = n.substring(1);
-    return myClasspath.getResource(n);
+    return n;
   }
 
   @Override
@@ -181,11 +176,8 @@ public class ResourceClassLoader extends ClassLoader {
     @Nullable
     @Override
     public InputStream callSelf(@NotNull final String name) {
-      final Resource res = getResourceImpl(name);
-      if (res == null) return null;
-
       try {
-        return res.getInputStream();
+        return myClasspath.getResourceAsStream(trimSlashes(name));
       } catch (IOException e) {
         return null;
       }
