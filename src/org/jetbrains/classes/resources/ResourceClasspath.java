@@ -44,7 +44,7 @@ public class ResourceClasspath {
       while(true) {
         ZipEntry ze = jos.getNextEntry();
         if (ze == null) break;
-
+        if (ze.isDirectory()) continue;
         myCache.put(ze.getName(), resource);
       }
     } finally {
@@ -87,7 +87,7 @@ public class ResourceClasspath {
     final ByteArrayOutputStream bos = new ByteArrayOutputStream(65536);
     byte[] buff = new byte[65536];
     int x;
-    while ((x = is.read(buff)) >= 0) bos.write(buff, 0, x);
+    while ((x = is.read(buff)) > 0) bos.write(buff, 0, x);
     return bos.toByteArray();
   }
 
@@ -103,6 +103,7 @@ public class ResourceClasspath {
         if (ze == null) {
           throw new FileNotFoundException(name);
         }
+        if (ze.isDirectory()) continue;
         if (ze.getName().equals(name)) {
           final int size = (int) ze.getSize();
           return new JarItemStream(size, jos);

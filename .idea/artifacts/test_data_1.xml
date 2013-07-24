@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact name="test-data-1">
+    <output-path>$PROJECT_DIR$/testData/data-1</output-path>
+    <root id="root">
+      <element id="archive" name="jar.jar">
+        <element id="library" level="project" name="testng" />
+        <element id="library" level="project" name="annotations" />
+      </element>
+    </root>
+  </artifact>
+</component>
