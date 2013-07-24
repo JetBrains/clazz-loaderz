@@ -24,6 +24,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +56,24 @@ public class ResourceClasspath {
 
   @NotNull
   public URL getResourceAsURL(@NotNull final String name) throws IOException {
-    throw new FileNotFoundException();
+    final ResourceHolder holder = myCache.get(name);
+    if (holder == null) throw new FileNotFoundException();
+
+    return new URL("jonnyzzz", "classloader", 42, name, new URLStreamHandler() {
+      @Override
+      protected URLConnection openConnection(@NotNull final URL u) throws IOException {
+        return new URLConnection(u) {
+          @Override
+          public void connect() throws IOException {
+          }
+
+          @Override
+          public InputStream getInputStream() throws IOException {
+            return getResourceAsStream(name);
+          }
+        };
+      }
+    });
   }
 
   @NotNull

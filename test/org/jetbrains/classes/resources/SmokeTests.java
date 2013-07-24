@@ -17,10 +17,14 @@
 package org.jetbrains.classes.resources;
 
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.jetbrains.annotations.Nullable;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 /**
  * Created 24.07.13 15:41
@@ -36,25 +40,68 @@ public class SmokeTests {
     ResourceClassLoader rcl = new ResourceClassLoader(
             Delegation.CALL_SELF_FIRST,
             null,
-            cp
-            );
+            cp);
 
     //should see class
     rcl.loadClass(NotNull.class.getName()).getMethods();
   }
 
-  @Test
-  public void should_load_testng_classes() throws IOException, ClassNotFoundException {
-    ResourceClasspath cp = new ResourceClasspath();
+  @NotNull
+  private ResourceClassLoader loadTestNG() throws IOException {
+    final ResourceClasspath cp = new ResourceClasspath();
     cp.addResource(new FileResource(new File("lib/testng/testng-6.8.jar")));
 
-    ResourceClassLoader rcl = new ResourceClassLoader(
+    return new ResourceClassLoader(
             Delegation.CALL_SELF_FIRST,
             null,
             cp
-            );
+    );
+  }
+
+  @Test
+  public void should_load_testng_classes() throws IOException, ClassNotFoundException {
+    final ResourceClassLoader rcl = loadTestNG();
 
     //should see class
     rcl.loadClass(Test.class.getName()).getMethods();
+  }
+
+  @Test
+  public void should_load_testng_stream() throws IOException, ClassNotFoundException {
+    final ResourceClassLoader rcl = loadTestNG();
+
+    //should see class
+    final InputStream stream = rcl.getResourceAsStream("/org/junit/Test.class");
+    Assert.assertNotNull(stream);
+    stream.close();
+  }
+
+  @Test
+  public void should_load_testng_URL() throws IOException, ClassNotFoundException {
+    final ResourceClassLoader rcl = loadTestNG();
+
+    //should see class
+    final URL url = rcl.getResource("/org/junit/Test.class");
+    Assert.assertNotNull(url);
+
+    assertStreamsEqual(url.openStream(), rcl.getResourceAsStream("/org/junit/Test.class"));
+  }
+
+
+  private void assertStreamsEqual(@Nullable InputStream is1, @Nullable InputStream is2) throws IOException {
+    if (is1 == null && is2 == null) return;
+
+    Assert.assertNotNull(is1);
+    Assert.assertNotNull(is2);
+    while(true) {
+      int x1 = is1.read();
+      int x2 = is2.read();
+
+      Assert.assertEquals(x1, x2);
+
+      if (x1 < 0) break;
+    }
+    is1.close();
+    is2.close();
   }
 }
