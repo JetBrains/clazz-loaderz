@@ -53,6 +53,11 @@ public class ResourceClasspath {
   }
 
   @NotNull
+  public URL getResourceAsURL(@NotNull final String name) throws IOException {
+    throw new FileNotFoundException();
+  }
+
+  @NotNull
   public Enumeration<URL> getResources(@NotNull String name) throws IOException {
     return new Enumeration<URL>() {
       @Override
@@ -70,11 +75,6 @@ public class ResourceClasspath {
   @NotNull
   public InputStream getResourceAsStream(@NotNull final String name) throws IOException {
     return extract(name, myCache.get(name));
-  }
-
-  @NotNull
-  public URL getResourceAsURL(@NotNull final String name) throws IOException {
-    throw new FileNotFoundException();
   }
 
   @NotNull
