@@ -47,7 +47,7 @@ public class ResourceClasspath {
   }
 
   @NotNull
-  public byte[] getClassResource(@NotNull final String classResource) throws IOException {
+  public byte[] getClassResource(@NotNull final String name) throws IOException {
     throw new FileNotFoundException();
   }
 }
