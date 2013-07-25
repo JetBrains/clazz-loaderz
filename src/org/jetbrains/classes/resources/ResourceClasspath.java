@@ -60,7 +60,7 @@ public class ResourceClasspath {
     final ResourceHolder holder = myCache.get(name);
     if (holder == null) throw new FileNotFoundException();
 
-    return new URL(PROTOCOL, "classloader", 42, name, HANDLER);
+    return new URL(PROTOCOL, "classloader", 42, "/" + name, HANDLER);
   }
 
   @NotNull
@@ -115,7 +115,6 @@ public class ResourceClasspath {
         }
         if (ze.isDirectory()) continue;
         if (ze.getName().equals(name)) {
-          final int size = (int) ze.getSize();
           return new JarItemStream(size, jos);
         }
       }
@@ -125,11 +124,17 @@ public class ResourceClasspath {
     }
   }
 
+  @NotNull
+  private String trimSlashes(@NotNull String n) {
+    while (n.startsWith("/")) n = n.substring(1);
+    return n;
+  }
+
   private final URLStreamHandler HANDLER = new URLStreamHandler() {
     @Override
     protected URLConnection openConnection(@NotNull final URL u) throws IOException {
       if (!u.getProtocol().equals(PROTOCOL)) throw new IOException("Unsupported URL: " + u);
-      final String name = u.getPath();
+      final String name = trimSlashes(u.getPath());
       return new URLConnection(u) {
         @Override
         public void connect() throws IOException {
@@ -157,6 +162,7 @@ public class ResourceClasspath {
     @Override
     public int read() throws IOException {
       if (myBytesToRead <= 0) return -1;
+
       int read = myJos.read();
       if (read != -1) {
         myBytesToRead--;
@@ -166,6 +172,8 @@ public class ResourceClasspath {
 
     @Override
     public int read(@NotNull byte[] b, int off, int len) throws IOException {
+      if (myBytesToRead <= 0) return -1;
+
       len = Math.min(myBytesToRead, len);
       int read = myJos.read(b, off, len);
       myBytesToRead -= read;
@@ -174,6 +182,8 @@ public class ResourceClasspath {
 
     @Override
     public long skip(long n) throws IOException {
+      if (myBytesToRead <= 0) return -1;
+
       n = Math.min(n, myBytesToRead);
       long skip = myJos.skip(n);
       myBytesToRead -= skip;
