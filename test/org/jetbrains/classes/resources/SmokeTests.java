@@ -19,6 +19,7 @@ package org.jetbrains.classes.resources;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
+import org.testng.ITestListener;
 import org.testng.TestNG;
 import org.testng.annotations.Test;
 
@@ -28,6 +29,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
 
 /**
  * Created 24.07.13 15:41
@@ -53,6 +55,50 @@ public class SmokeTests {
   private ResourceClassLoader loadTestNG() throws IOException {
     final ResourceClasspath cp = new ResourceClasspath();
     cp.addResource(new FileResource(new File("lib/testng/testng-6.8.jar")));
+
+    return new ResourceClassLoader(
+            Delegation.CALL_SELF_FIRST,
+            null,
+            cp
+    );
+  }
+
+  @NotNull
+  private ResourceClassLoader resResLoadTestNG() throws IOException {
+    //this test requires `test-data-2` artifact to be compiled
+    final File jar = new File("testData/data-2/jar3.jar");
+    Assert.assertTrue(jar.isFile());
+    final URLClassLoader cl3 = new URLClassLoader(new URL[] { jar.toURI().toURL()}, null);
+
+    final ResourceClasspath cp2 = new ResourceClasspath();
+    cp2.addResource(new ClassloaderResource(cl3, "jar2.jar"));
+    final ResourceClassLoader cl2 = new ResourceClassLoader(Delegation.CALL_PARENT_FIRST, cl3, cp2);
+
+    final ResourceClasspath cp1 = new ResourceClasspath();
+    cp1.addResource(new ClassloaderResource(cl2, "jar1.jar"));
+    final ResourceClassLoader cl1 = new ResourceClassLoader(Delegation.CALL_PARENT_FIRST, cl2, cp1);
+
+    final ResourceClasspath cp = new ResourceClasspath();
+    cp.addResource(new ClassloaderResource(cl1, "jar.jar"));
+    final ResourceClassLoader cl = new ResourceClassLoader(Delegation.CALL_PARENT_FIRST, cl1, cp);
+
+    final ResourceClasspath ng = new ResourceClasspath();
+    ng.addResource(new ClassloaderResource(cl, "testng-6.8.jar"));
+
+    return new ResourceClassLoader(Delegation.CALL_SELF_FIRST, null, ng);
+  }
+
+  @NotNull
+  private ResourceClassLoader resLoadTestNG() throws IOException {
+    //this test requires `test-data-1` artifact to be compiled
+    final File jar = new File("testData/data-1/jar.jar");
+    Assert.assertTrue(jar.isFile());
+
+    final URLClassLoader parent = new URLClassLoader(new URL[] { jar.toURI().toURL()}, null);
+    final ResourceClasspath cp = new ResourceClasspath();
+    cp.addResource(new ClassloaderResource(parent, "testng-6.8.jar"));
+
+
 
     return new ResourceClassLoader(
             Delegation.CALL_SELF_FIRST,
@@ -95,9 +141,32 @@ public class SmokeTests {
     final ResourceClassLoader rcl = loadTestNG();
 
     //should see class
+    callTestNGMain(rcl);
+  }
+
+  @Test
+  public void should_run_resTestNG() throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    //this test requires `test-data-1` artifact to be compiled
+    final ResourceClassLoader rcl = resLoadTestNG();
+
+    callTestNGMain(rcl);
+  }
+
+  private void callTestNGMain(ResourceClassLoader rcl) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    //should see class
     final Class<?> testNG = rcl.loadClass(TestNG.class.getName());
-    final Method main = testNG.getMethod("main", String[].class);
-    main.invoke(null, new Object[] {new String[]{"--help"}});
+    final Class<?> listener = rcl.loadClass(ITestListener.class.getName());
+    final Method main = testNG.getMethod("privateMain", String[].class, listener);
+    main.invoke(null, new String[]{"-junit"}, null);
+  }
+
+  @Test
+  public void should_run_res_resTestNG() throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    //this test requires `test-data-2` artifact to be compiled
+    final ResourceClassLoader rcl = resResLoadTestNG();
+
+    //should see class
+    callTestNGMain(rcl);
   }
 
   @Test(expectedExceptions = ClassNotFoundException.class)
