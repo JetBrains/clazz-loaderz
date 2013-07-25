@@ -19,11 +19,14 @@ package org.jetbrains.classes.resources;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
+import org.testng.TestNG;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 
 /**
@@ -87,6 +90,15 @@ public class SmokeTests {
     assertStreamsEqual(url.openStream(), rcl.getResourceAsStream("/org/junit/Test.class"));
   }
 
+  @Test
+  public void should_run_testNG() throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    final ResourceClassLoader rcl = loadTestNG();
+
+    //should see class
+    final Class<?> testNG = rcl.loadClass(TestNG.class.getName());
+    final Method main = testNG.getMethod("main", String[].class);
+    main.invoke(null, new Object[] {new String[]{"--help"}});
+  }
 
   private void assertStreamsEqual(@Nullable InputStream is1, @Nullable InputStream is2) throws IOException {
     if (is1 == null && is2 == null) return;
