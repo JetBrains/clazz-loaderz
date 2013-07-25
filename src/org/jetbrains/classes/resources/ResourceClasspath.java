@@ -38,6 +38,7 @@ import java.util.zip.ZipEntry;
  * @author Eugene Petrenko (eugene.petrenko@jetbrains.com)
  */
 public class ResourceClasspath {
+  private static final String PROTOCOL = "jonnyzzz";
   private final Map<String, ResourceHolder> myCache = new HashMap<String, ResourceHolder>();
 
   public void addResource(@NotNull ResourceHolder resource) throws IOException {
@@ -59,34 +60,24 @@ public class ResourceClasspath {
     final ResourceHolder holder = myCache.get(name);
     if (holder == null) throw new FileNotFoundException();
 
-    return new URL("jonnyzzz", "classloader", 42, name, new URLStreamHandler() {
-      @Override
-      protected URLConnection openConnection(@NotNull final URL u) throws IOException {
-        return new URLConnection(u) {
-          @Override
-          public void connect() throws IOException {
-          }
-
-          @Override
-          public InputStream getInputStream() throws IOException {
-            return getResourceAsStream(name);
-          }
-        };
-      }
-    });
+    return new URL(PROTOCOL, "classloader", 42, name, HANDLER);
   }
 
   @NotNull
-  public Enumeration<URL> getResources(@NotNull String name) throws IOException {
+  public Enumeration<URL> getResources(@NotNull final String name) throws IOException {
+    final URL url = getResourceAsURL(name);
+
     return new Enumeration<URL>() {
+      private boolean myVisited;
       @Override
       public boolean hasMoreElements() {
-        return false;
+        return !myVisited;
       }
 
       @Override
       public URL nextElement() {
-        return null;
+        myVisited = true;
+        return url;
       }
     };
   }
@@ -134,6 +125,23 @@ public class ResourceClasspath {
     }
   }
 
+  private final URLStreamHandler HANDLER = new URLStreamHandler() {
+    @Override
+    protected URLConnection openConnection(@NotNull final URL u) throws IOException {
+      if (!u.getProtocol().equals(PROTOCOL)) throw new IOException("Unsupported URL: " + u);
+      final String name = u.getPath();
+      return new URLConnection(u) {
+        @Override
+        public void connect() throws IOException {
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+          return getResourceAsStream(name);
+        }
+      };
+    }
+  };
 
   private static class JarItemStream extends InputStream {
     private final int mySize;
@@ -149,22 +157,27 @@ public class ResourceClasspath {
     @Override
     public int read() throws IOException {
       if (myBytesToRead <= 0) return -1;
-      myBytesToRead--;
-      return myJos.read();
+      int read = myJos.read();
+      if (read != -1) {
+        myBytesToRead--;
+      }
+      return read;
     }
 
     @Override
     public int read(@NotNull byte[] b, int off, int len) throws IOException {
       len = Math.min(myBytesToRead, len);
-      myBytesToRead -= len;
-      return myJos.read(b, off, len);
+      int read = myJos.read(b, off, len);
+      myBytesToRead -= read;
+      return read;
     }
 
     @Override
     public long skip(long n) throws IOException {
       n = Math.min(n, myBytesToRead);
-      myBytesToRead -= n;
-      return myJos.skip(n);
+      long skip = myJos.skip(n);
+      myBytesToRead -= skip;
+      return skip;
     }
 
     @Override

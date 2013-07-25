@@ -116,6 +116,7 @@ public class ResourceClassLoader extends ClassLoader {
     return n;
   }
 
+  @NotNull
   @Override
   protected Enumeration<URL> findResources(@NotNull final String name) throws IOException {
     return myClasspath.getResources(name);
