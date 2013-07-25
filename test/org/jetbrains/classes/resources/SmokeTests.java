@@ -100,6 +100,13 @@ public class SmokeTests {
     main.invoke(null, new Object[] {new String[]{"--help"}});
   }
 
+  @Test(expectedExceptions = ClassNotFoundException.class)
+  public void should_not_see_this_class() throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    final ResourceClassLoader rcl = loadTestNG();
+
+    rcl.loadClass(getClass().getName());
+  }
+
   private void assertStreamsEqual(@Nullable InputStream is1, @Nullable InputStream is2) throws IOException {
     if (is1 == null && is2 == null) return;
 
