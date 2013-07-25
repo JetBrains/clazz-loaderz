@@ -111,7 +111,7 @@ public class ResourceClassLoader extends ClassLoader {
   }
 
   @NotNull
-  private String trimSlashes(@NotNull String n) {
+  private static String trimSlashes(@NotNull String n) {
     while (n.startsWith("/")) n = n.substring(1);
     return n;
   }
