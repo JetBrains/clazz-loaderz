@@ -29,8 +29,8 @@ import java.net.URLStreamHandler;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created 24.07.13 11:49
@@ -42,7 +42,7 @@ public class ResourceClasspath {
   private final Map<String, ResourceHolder> myCache = new HashMap<String, ResourceHolder>();
 
   public void addResource(@NotNull ResourceHolder resource) throws IOException {
-    final JarInputStream jos = new JarInputStream(resource.getContent(), false);
+    final ZipInputStream jos = new ZipInputStream(resource.getContent());
     try {
       while(true) {
         ZipEntry ze = jos.getNextEntry();
@@ -106,7 +106,7 @@ public class ResourceClasspath {
                               @Nullable final ResourceHolder holder) throws IOException {
     if (holder == null) throw new FileNotFoundException(name);
 
-    final JarInputStream jos = new JarInputStream(holder.getContent(), false);
+    final ZipInputStream jos = new ZipInputStream(holder.getContent());
     try {
       while (true) {
         final ZipEntry ze = jos.getNextEntry();
