@@ -115,7 +115,7 @@ public class ResourceClasspath {
         }
         if (ze.isDirectory()) continue;
         if (ze.getName().equals(name)) {
-          return new JarItemStream(size, jos);
+          return jos;
         }
       }
     } catch (IOException e) {
@@ -147,52 +147,4 @@ public class ResourceClasspath {
       };
     }
   };
-
-  private static class JarItemStream extends InputStream {
-    private final int mySize;
-    private final InputStream myJos;
-    private int myBytesToRead;
-
-    public JarItemStream(int size, @NotNull InputStream jos) {
-      mySize = size;
-      myJos = jos;
-      myBytesToRead = mySize;
-    }
-
-    @Override
-    public int read() throws IOException {
-      if (myBytesToRead <= 0) return -1;
-
-      int read = myJos.read();
-      if (read != -1) {
-        myBytesToRead--;
-      }
-      return read;
-    }
-
-    @Override
-    public int read(@NotNull byte[] b, int off, int len) throws IOException {
-      if (myBytesToRead <= 0) return -1;
-
-      len = Math.min(myBytesToRead, len);
-      int read = myJos.read(b, off, len);
-      myBytesToRead -= read;
-      return read;
-    }
-
-    @Override
-    public long skip(long n) throws IOException {
-      if (myBytesToRead <= 0) return -1;
-
-      n = Math.min(n, myBytesToRead);
-      long skip = myJos.skip(n);
-      myBytesToRead -= skip;
-      return skip;
-    }
-
-    @Override
-    public void close() throws IOException {
-      myJos.close();
-    }
-  }
 }
