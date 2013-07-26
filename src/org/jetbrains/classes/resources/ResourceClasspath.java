@@ -17,15 +17,18 @@
 package org.jetbrains.classes.resources;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.classes.resources.entry.CompositeEntry;
+import org.jetbrains.classes.resources.entry.ResourceEntry;
+import org.jetbrains.classes.resources.entry.SizedGZipResourceEntry;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -40,34 +43,6 @@ public class ResourceClasspath {
   private static final int BUFFER = 65536;
 
   private final Map<String, ResourceEntry> myCache = new HashMap<String, ResourceEntry>();
-
-  private static class ResourceEntry {
-    private final int mySize;
-    private final byte[] myData;
-
-    private ResourceEntry(final int actualSize, @NotNull byte[] data) {
-      mySize = actualSize;
-      myData = data;
-    }
-
-    @NotNull
-    public byte[] getBytes() throws IOException {
-      byte[] result = new byte[mySize];
-      final InputStream stream = getStream();
-      int i = 0;
-      while(i + 1 < mySize) {
-        int read = stream.read(result, i, mySize - i);
-        if (read <= 0) throw new EOFException();
-        i += read;
-      }
-      return result;
-    }
-
-    @NotNull
-    public InputStream getStream() throws IOException {
-      return new GZIPInputStream(new ByteArrayInputStream(myData));
-    }
-  }
 
   public void addResource(@NotNull ResourceHolder resource) throws IOException {
     final byte[] buff = new byte[BUFFER];
@@ -89,7 +64,13 @@ public class ResourceClasspath {
         }
         gos.close();
 
-        myCache.put(ze.getName(), new ResourceEntry(actualSize, bos.toByteArray()));
+        final SizedGZipResourceEntry entry = new SizedGZipResourceEntry(actualSize, bos.toByteArray());
+
+        final String key = trimSlashes(ze.getName());
+        final ResourceEntry prev = myCache.put(key, entry);
+        if (prev != null) {
+          myCache.put(key, new CompositeEntry(entry, prev));
+        }
       }
     } finally {
       jos.close();
@@ -100,24 +81,36 @@ public class ResourceClasspath {
   public URL getResourceAsURL(@NotNull final String name) throws IOException {
     final ResourceEntry holder = myCache.get(name);
     if (holder == null) throw new FileNotFoundException();
-
-    return new URL(PROTOCOL, "classloader", 42, "/" + name, HANDLER);
+    int id = 0;
+    return createURL(name, id);
   }
 
   @NotNull
-  public Enumeration<URL> getResources(@NotNull final String name) throws IOException {
-    final URL url = getResourceAsURL(name);
+  private URL createURL(@NotNull final String name, int id) {
+    try {
+    return new URL(PROTOCOL, "classloader", 42 + id, "/" + name, HANDLER);
+    } catch (MalformedURLException e) {
+      throw new RuntimeException("Failed to create URL  for " + name + ", id=" + id + " " + e.getMessage(), e);
+    }
+  }
+
+  @NotNull
+  public Enumeration<URL> getResources(@NotNull final String name) {
+    final ResourceEntry entry = myCache.get(name);
+    if (entry == null) return EMPTY;
 
     return new Enumeration<URL>() {
-      private boolean myVisited;
+      private int myCount = 0;
+      private ResourceEntry myEntry = entry;
       @Override
       public boolean hasMoreElements() {
-        return !myVisited;
+        return myEntry != null;
       }
 
       @Override
       public URL nextElement() {
-        myVisited = true;
+        final URL url = createURL(name, myCount++);
+        myEntry = myEntry.getNextEntry();
         return url;
       }
     };
@@ -148,6 +141,8 @@ public class ResourceClasspath {
     protected URLConnection openConnection(@NotNull final URL u) throws IOException {
       if (!u.getProtocol().equals(PROTOCOL)) throw new IOException("Unsupported URL: " + u);
       final String name = trimSlashes(u.getPath());
+      final int idx = u.getPort() - 42;
+
       return new URLConnection(u) {
         @Override
         public void connect() throws IOException {
@@ -155,9 +150,27 @@ public class ResourceClasspath {
 
         @Override
         public InputStream getInputStream() throws IOException {
-          return getResourceAsStream(name);
+          ResourceEntry holder = myCache.get(name);
+          for (int cnt = idx; cnt > 0 && holder != null; cnt--) {
+            holder = holder.getNextEntry();
+          }
+
+          if (holder == null) throw new FileNotFoundException(name);
+          return holder.getStream();
         }
       };
+    }
+  };
+
+  private static final Enumeration<URL> EMPTY = new Enumeration<URL>() {
+    @Override
+    public boolean hasMoreElements() {
+      return false;
+    }
+
+    @Override
+    public URL nextElement() {
+      return null;
     }
   };
 }

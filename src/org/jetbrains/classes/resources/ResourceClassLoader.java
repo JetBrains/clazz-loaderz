@@ -119,7 +119,7 @@ public class ResourceClassLoader extends ClassLoader {
   @NotNull
   @Override
   protected Enumeration<URL> findResources(@NotNull final String name) throws IOException {
-    return myClasspath.getResources(name);
+    return myClasspath.getResources(trimSlashes(name));
   }
 
   @Nullable

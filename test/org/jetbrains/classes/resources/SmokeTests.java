@@ -26,6 +26,10 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
 
 import static org.jetbrains.classes.resources.RunTestNG.callTestNGMain;
 import static org.jetbrains.classes.resources.Streams.assertStreamsEqual;
@@ -158,6 +162,26 @@ public class SmokeTests {
 
     //should see class
     callTestNGMain(rcl);
+  }
+
+  @Test
+  public void should_see_duplicating_resources() throws IOException {
+    ResourceClasspath cp = new ResourceClasspath();
+    cp.addResource(new FileResource(new File("lib/annotations/annotations.jar")));
+    cp.addResource(new FileResource(new File("lib/annotations/annotations.jar")));
+    cp.addResource(new FileResource(new File("lib/annotations/annotations.jar")));
+    cp.addResource(new FileResource(new File("lib/annotations/annotations.jar")));
+
+    ResourceClassLoader rcl = new ResourceClassLoader(
+            Delegation.CALL_SELF_FIRST,
+            null,
+            cp);
+
+    //should see class
+    final List<URL> result = new ArrayList<URL>();
+    for (Enumeration<URL> en = rcl.getResources("/" + NotNull.class.getName().replace(".", "/") + ".class"); en.hasMoreElements(); ) result.add(en.nextElement());
+    Assert.assertEquals(result.size(), 4);
+    Assert.assertEquals(new HashSet<URL>(result).size(), 4);
   }
 
   @Test(expectedExceptions = ClassNotFoundException.class)
