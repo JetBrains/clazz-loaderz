@@ -214,10 +214,12 @@ public class SmokeTests {
     rcl.loadClass(getClass().getName());
   }
 
-  @Test(enabled = false)
+  @Test
   public void should_work_with_vcs_worker() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
     //requires VCS Worker client library to be placed in testData/worker
     final File home = new File("testData/worker");
+    if (!home.isDirectory()) return;
+
     final ResourceClasspath cp = new ResourceClasspath();
 
     final File[] files = home.listFiles();
