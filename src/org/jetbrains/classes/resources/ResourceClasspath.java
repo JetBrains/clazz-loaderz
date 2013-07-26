@@ -21,7 +21,10 @@ import org.jetbrains.classes.resources.entry.CompositeEntry;
 import org.jetbrains.classes.resources.entry.ResourceEntry;
 import org.jetbrains.classes.resources.entry.SizedGZipResourceEntry;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -30,9 +33,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static org.jetbrains.classes.resources.util.Streams.copyStreams;
 
 /**
  * Created 24.07.13 11:49
@@ -55,16 +59,10 @@ public class ResourceClasspath {
         if (ze == null) break;
         if (ze.isDirectory()) continue;
 
-        int actualSize = 0;
         final int entrySize = (int)ze.getSize();
         final ByteArrayOutputStream bos = new ByteArrayOutputStream(entrySize > 0 ? entrySize : BUFFER);
-        final GZIPOutputStream gos = new GZIPOutputStream(bos);
-        int x;
-        while ((x = jos.read(buff)) > 0) {
-          actualSize += x;
-          gos.write(buff, 0, x);
-        }
-        gos.close();
+        final int actualSize = copyStreams(buff, jos, bos);
+        bos.close();
 
         final SizedGZipResourceEntry entry = new SizedGZipResourceEntry(actualSize, bos.toByteArray());
 

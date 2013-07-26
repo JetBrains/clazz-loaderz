@@ -27,7 +27,7 @@ import java.io.InputStream;
  *
  * @author Eugene Petrenko (eugene.petrenko@jetbrains.com)
  */
-public class Streams {
+public class TestStreams {
   public static void assertStreamsEqual(@Nullable InputStream is1, @Nullable InputStream is2) throws IOException {
     if (is1 == null && is2 == null) return;
 

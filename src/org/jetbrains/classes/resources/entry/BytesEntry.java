@@ -17,27 +17,39 @@
 package org.jetbrains.classes.resources.entry;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.GZIPInputStream;
 
 /**
- * Created 26.07.13 12:12
+ * Created 26.07.13 13:11
  *
  * @author Eugene Petrenko (eugene.petrenko@jetbrains.com)
  */
-public abstract class BaseGZipResourceEntry extends BaseEntry {
-  protected final byte[] myData;
+public class BytesEntry extends BaseEntry {
+  private final byte[] myData;
 
-  public BaseGZipResourceEntry(@NotNull byte[] data) {
+  public BytesEntry(@NotNull final byte[] data) {
     myData = data;
   }
 
-  @Override
   @NotNull
+  @Override
+  public byte[] getBytes() throws IOException {
+    return myData;
+  }
+
+  @NotNull
+  @Override
   public InputStream getStream() throws IOException {
-    return new GZIPInputStream(new ByteArrayInputStream(myData));
+    return new ByteArrayInputStream(myData);
+  }
+
+  @Nullable
+  @Override
+  public ResourceEntry getNextEntry() {
+    return null;
   }
 }

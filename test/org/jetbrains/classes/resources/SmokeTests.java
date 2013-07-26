@@ -33,7 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.jetbrains.classes.resources.RunTestNG.callTestNGMain;
-import static org.jetbrains.classes.resources.Streams.assertStreamsEqual;
+import static org.jetbrains.classes.resources.TestStreams.assertStreamsEqual;
 
 /**
  * Created 24.07.13 15:41

@@ -14,30 +14,29 @@
  * limitations under the License.
  */
 
-package org.jetbrains.classes.resources.entry;
+package org.jetbrains.classes.resources.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.GZIPInputStream;
+import java.io.OutputStream;
 
 /**
- * Created 26.07.13 12:12
+ * Created 26.07.13 13:25
  *
  * @author Eugene Petrenko (eugene.petrenko@jetbrains.com)
  */
-public abstract class BaseGZipResourceEntry extends BaseEntry {
-  protected final byte[] myData;
-
-  public BaseGZipResourceEntry(@NotNull byte[] data) {
-    myData = data;
-  }
-
-  @Override
-  @NotNull
-  public InputStream getStream() throws IOException {
-    return new GZIPInputStream(new ByteArrayInputStream(myData));
+public class Streams {
+  public static int copyStreams(@NotNull final byte[] buff,
+                                @NotNull final InputStream input,
+                                @NotNull final OutputStream output) throws IOException {
+    int x;
+    int actualSize = 0;
+    while ((x = input.read(buff)) > 0) {
+      actualSize += x;
+      output.write(buff, 0, x);
+    }
+    return actualSize;
   }
 }
