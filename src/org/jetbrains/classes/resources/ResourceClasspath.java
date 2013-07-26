@@ -68,7 +68,7 @@ public class ResourceClasspath {
     final int sz = readFully(jos, buff);
 
     if (sz <= GZIP_SIZE) return new BytesEntry(Arrays.copyOf(buff, sz));
-    if (sz <= buff.length) {
+    if (sz < buff.length) {
       return isClazz
               ? new SizedGZipResourceEntry(sz, gzip(buff, 0, sz))
               : new GZipResourceEntry(gzip(buff, 0, sz));

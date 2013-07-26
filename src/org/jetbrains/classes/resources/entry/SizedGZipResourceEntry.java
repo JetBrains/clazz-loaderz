@@ -41,12 +41,14 @@ public class SizedGZipResourceEntry extends BaseGZipResourceEntry {
     byte[] result = new byte[mySize];
     final InputStream stream = getStream();
     int i = 0;
-    while(i + 1 < mySize) {
+    while(i < mySize) {
       int read = stream.read(result, i, mySize - i);
       if (read <= 0) throw new EOFException();
       i += read;
     }
-    if (stream.read() >= 0) throw new IndexOutOfBoundsException();
+    if (stream.read() >= 0) {
+      throw new IndexOutOfBoundsException();
+    }
     return result;
   }
 }
