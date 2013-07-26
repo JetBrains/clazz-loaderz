@@ -20,11 +20,14 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created 26.07.13 18:23
@@ -32,9 +35,27 @@ import java.util.List;
  * @author Eugene Petrenko (eugene.petrenko@jetbrains.com)
  */
 public class PackedTest {
+
+  private String readClassName() throws FileNotFoundException {
+    final Scanner s = new Scanner(new FileInputStream("packed-impl/factory-name.txt"), "utf-8");
+    try {
+      return s.nextLine();
+    } finally {
+      s.close();
+    }
+  }
+
+  public ClassLoader forResources(final ClassLoader parent,
+                                  final URL... resources) throws FileNotFoundException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    return (ClassLoader) getClass().getClassLoader()
+            .loadClass(readClassName())
+            .getMethod("forResources", ClassLoader.class, URL[].class)
+            .invoke(null, parent, resources);
+  }
+
   @Test
-  public void should_be_able_to_create_classloader() throws IOException {
-    ResourceClassLoaderFactory.forResources(getClass().getClassLoader());
+  public void should_be_able_to_create_classloader() throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    forResources(getClass().getClassLoader());
   }
 
   @Test
@@ -57,7 +78,7 @@ public class PackedTest {
       }
     }
 
-    final ClassLoader rcl = ResourceClassLoaderFactory.forResources(getClass().getClassLoader(), urls.toArray(new URL[urls.size()]));
+    final ClassLoader rcl = forResources(getClass().getClassLoader(), urls.toArray(new URL[urls.size()]));
 
     final Object clientSettings = rcl.loadClass("jetbrains.vcs.api.remote.VcsClientSettings").getConstructor(String.class).newInstance("http://localhost:9888");
 

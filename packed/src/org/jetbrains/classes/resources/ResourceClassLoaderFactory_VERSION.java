@@ -31,7 +31,7 @@ import java.util.zip.ZipInputStream;
  *
  * @author Eugene Petrenko (eugene.petrenko@jetbrains.com)
  */
-public class ResourceClassLoaderFactory {
+public class ResourceClassLoaderFactory_VERSION {
   public static ClassLoader forConfiguration(@NotNull final ClassLoader parent,
                                              @NotNull final InputStream resourceUrlsStream) throws UnsupportedEncodingException, MalformedURLException {
     final List<URL> urls = new ArrayList<URL>();
@@ -82,7 +82,7 @@ public class ResourceClassLoaderFactory {
     public ClazzLoader() throws IOException {
       super(null);
 
-      final ZipInputStream zis = new ZipInputStream(ResourceClassLoaderFactory.class.getClassLoader().getResourceAsStream("resource-classloader-factory.jonnyzzz"));
+      final ZipInputStream zis = new ZipInputStream(ResourceClassLoaderFactory_VERSION.class.getClassLoader().getResourceAsStream("resource-classloader-factory.jonnyzzz"));
       try {
         ZipEntry ze;
         while ((ze = zis.getNextEntry()) != null) {

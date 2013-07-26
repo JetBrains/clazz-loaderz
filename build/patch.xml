@@ -1,0 +1,20 @@
+<project basedir=".">
+
+  <property name="home" value="${basedir}/.." />
+
+  <property name="build.number" value="SNAPSHOT" />
+
+  <target name="patch_sources">
+
+    <delete dir="${home}/packed-impl/src" failonerror="false"/>
+    <copy todir="${home}/packed-impl/src">
+      <fileset dir="${home}/packed/src" includes="**/*"/>
+      <mapper type="regexp" from="(.*_)VERSION(.*)" to="\1${build.number}\2"/>
+    </copy>
+
+    <copy file="${home}/packed/factory-name.txt" todir="${home}/packed-impl" overwrite="true"/>
+
+    <replace dir="${home}/packed-impl" includes="**/*" token="_VERSION" value="_${build.number}"/>
+  </target>
+
+</project>

@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/class-loaders.iml" filepath="$PROJECT_DIR$/class-loaders.iml" />
       <module fileurl="file://$PROJECT_DIR$/packed/packed.iml" filepath="$PROJECT_DIR$/packed/packed.iml" />
+      <module fileurl="file://$PROJECT_DIR$/packed-impl/packed-impl.iml" filepath="$PROJECT_DIR$/packed-impl/packed-impl.iml" />
       <module fileurl="file://$PROJECT_DIR$/packed-test/packed-test.iml" filepath="$PROJECT_DIR$/packed-test/packed-test.iml" />
     </modules>
   </component>
