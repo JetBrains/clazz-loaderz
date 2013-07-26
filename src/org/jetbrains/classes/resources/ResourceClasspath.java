@@ -17,18 +17,16 @@
 package org.jetbrains.classes.resources;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -39,16 +37,59 @@ import java.util.zip.ZipInputStream;
  */
 public class ResourceClasspath {
   private static final String PROTOCOL = "jonnyzzz";
-  private final Map<String, ResourceHolder> myCache = new HashMap<String, ResourceHolder>();
+  private static final int BUFFER = 65536;
+
+  private final Map<String, ResourceEntry> myCache = new HashMap<String, ResourceEntry>();
+
+  private static class ResourceEntry {
+    private final int mySize;
+    private final byte[] myData;
+
+    private ResourceEntry(final int actualSize, @NotNull byte[] data) {
+      mySize = actualSize;
+      myData = data;
+    }
+
+    @NotNull
+    public byte[] getBytes() throws IOException {
+      byte[] result = new byte[mySize];
+      final InputStream stream = getStream();
+      int i = 0;
+      while(i + 1 < mySize) {
+        int read = stream.read(result, i, mySize - i);
+        if (read <= 0) throw new EOFException();
+        i += read;
+      }
+      return result;
+    }
+
+    @NotNull
+    public InputStream getStream() throws IOException {
+      return new GZIPInputStream(new ByteArrayInputStream(myData));
+    }
+  }
 
   public void addResource(@NotNull ResourceHolder resource) throws IOException {
+    final byte[] buff = new byte[BUFFER];
     final ZipInputStream jos = new ZipInputStream(resource.getContent());
     try {
       while(true) {
-        ZipEntry ze = jos.getNextEntry();
+        final ZipEntry ze = jos.getNextEntry();
         if (ze == null) break;
         if (ze.isDirectory()) continue;
-        myCache.put(ze.getName(), resource);
+
+        int actualSize = 0;
+        final int entrySize = (int)ze.getSize();
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream(entrySize > 0 ? entrySize : BUFFER);
+        final GZIPOutputStream gos = new GZIPOutputStream(bos);
+        int x;
+        while ((x = jos.read(buff)) > 0) {
+          actualSize += x;
+          gos.write(buff, 0, x);
+        }
+        gos.close();
+
+        myCache.put(ze.getName(), new ResourceEntry(actualSize, bos.toByteArray()));
       }
     } finally {
       jos.close();
@@ -57,7 +98,7 @@ public class ResourceClasspath {
 
   @NotNull
   public URL getResourceAsURL(@NotNull final String name) throws IOException {
-    final ResourceHolder holder = myCache.get(name);
+    final ResourceEntry holder = myCache.get(name);
     if (holder == null) throw new FileNotFoundException();
 
     return new URL(PROTOCOL, "classloader", 42, "/" + name, HANDLER);
@@ -84,44 +125,16 @@ public class ResourceClasspath {
 
   @NotNull
   public InputStream getResourceAsStream(@NotNull final String name) throws IOException {
-    return extract(name, myCache.get(name));
+    final ResourceEntry holder = myCache.get(name);
+    if (holder == null) throw new FileNotFoundException(name);
+    return holder.getStream();
   }
 
   @NotNull
   public byte[] getClassResource(@NotNull final String name) throws IOException {
-    return readFully(getResourceAsStream(name));
-  }
-
-  @NotNull
-  private byte[] readFully(@NotNull final InputStream is) throws IOException {
-    final ByteArrayOutputStream bos = new ByteArrayOutputStream(65536);
-    byte[] buff = new byte[65536];
-    int x;
-    while ((x = is.read(buff)) > 0) bos.write(buff, 0, x);
-    return bos.toByteArray();
-  }
-
-  @NotNull
-  private InputStream extract(@NotNull final String name,
-                              @Nullable final ResourceHolder holder) throws IOException {
+    final ResourceEntry holder = myCache.get(name);
     if (holder == null) throw new FileNotFoundException(name);
-
-    final ZipInputStream jos = new ZipInputStream(holder.getContent());
-    try {
-      while (true) {
-        final ZipEntry ze = jos.getNextEntry();
-        if (ze == null) {
-          throw new FileNotFoundException(name);
-        }
-        if (ze.isDirectory()) continue;
-        if (ze.getName().equals(name)) {
-          return jos;
-        }
-      }
-    } catch (IOException e) {
-      jos.close();
-      throw new IOException(e);
-    }
+    return holder.getBytes();
   }
 
   @NotNull
