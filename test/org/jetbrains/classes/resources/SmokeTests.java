@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -182,6 +183,28 @@ public class SmokeTests {
     for (Enumeration<URL> en = rcl.getResources("/" + NotNull.class.getName().replace(".", "/") + ".class"); en.hasMoreElements(); ) result.add(en.nextElement());
     Assert.assertEquals(result.size(), 4);
     Assert.assertEquals(new HashSet<URL>(result).size(), 4);
+  }
+
+  @Test
+  public void should_fetch_duplicating_resources() throws IOException {
+    ResourceClasspath cp = new ResourceClasspath();
+    cp.addResource(new FileResource(new File("testData/data-3/j1.jar")));
+    cp.addResource(new FileResource(new File("testData/data-3/j2.jar")));
+    cp.addResource(new FileResource(new File("testData/data-3/j3.jar")));
+
+    ResourceClassLoader rcl = new ResourceClassLoader(
+            Delegation.CALL_SELF_FIRST,
+            null,
+            cp);
+
+    //should see class
+    final List<URL> result = new ArrayList<URL>();
+    for (Enumeration<URL> en = rcl.getResources("foo.txt"); en.hasMoreElements(); ) result.add(en.nextElement());
+    Assert.assertEquals(result.size(), 3);
+
+    assertStreamsEqual(result.get(2).openStream(), new ByteArrayInputStream("1".getBytes("utf-8")));
+    assertStreamsEqual(result.get(1).openStream(), new ByteArrayInputStream("2 ".getBytes("utf-8")));
+    assertStreamsEqual(result.get(0).openStream(), new ByteArrayInputStream(" 3 ".getBytes("utf-8")));
   }
 
   @Test(expectedExceptions = ClassNotFoundException.class)
