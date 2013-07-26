@@ -29,6 +29,7 @@ import java.net.URLStreamHandler;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -42,6 +43,7 @@ public class ResourceClasspath {
   private static final String PROTOCOL = "jonnyzzz";
   private static final int BUFFER = 65536;
 
+  private final String myId = UUID.randomUUID().toString();
   private final Map<String, ResourceEntry> myCache = new HashMap<String, ResourceEntry>();
 
   public void addResource(@NotNull ResourceHolder resource) throws IOException {
@@ -88,7 +90,7 @@ public class ResourceClasspath {
   @NotNull
   private URL createURL(@NotNull final String name, int id) {
     try {
-    return new URL(PROTOCOL, "classloader", 42 + id, "/" + name, HANDLER);
+    return new URL(PROTOCOL, myId, 42 + id, "/" + name, HANDLER);
     } catch (MalformedURLException e) {
       throw new RuntimeException("Failed to create URL  for " + name + ", id=" + id + " " + e.getMessage(), e);
     }
@@ -140,6 +142,7 @@ public class ResourceClasspath {
     @Override
     protected URLConnection openConnection(@NotNull final URL u) throws IOException {
       if (!u.getProtocol().equals(PROTOCOL)) throw new IOException("Unsupported URL: " + u);
+      if (!u.getHost().equals(myId)) throw new IOException("Unsupported URL: " + u);
       final String name = trimSlashes(u.getPath());
       final int idx = u.getPort() - 42;
 
