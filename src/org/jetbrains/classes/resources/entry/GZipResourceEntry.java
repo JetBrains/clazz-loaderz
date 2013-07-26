@@ -17,36 +17,23 @@
 package org.jetbrains.classes.resources.entry;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.classes.resources.util.Streams;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
- * Created 26.07.13 12:11
+ * Created 26.07.13 16:06
  *
  * @author Eugene Petrenko (eugene.petrenko@jetbrains.com)
  */
-public class SizedGZipResourceEntry extends BaseGZipResourceEntry {
-  private final int mySize;
-
-  public SizedGZipResourceEntry(final int actualSize, @NotNull final byte[] data) {
+public class GZipResourceEntry extends BaseGZipResourceEntry {
+  public GZipResourceEntry(@NotNull byte[] data) {
     super(data);
-    mySize = actualSize;
   }
 
-  @Override
   @NotNull
+  @Override
   public byte[] getBytes() throws IOException {
-    byte[] result = new byte[mySize];
-    final InputStream stream = getStream();
-    int i = 0;
-    while(i + 1 < mySize) {
-      int read = stream.read(result, i, mySize - i);
-      if (read <= 0) throw new EOFException();
-      i += read;
-    }
-    if (stream.read() >= 0) throw new IndexOutOfBoundsException();
-    return result;
+    return Streams.readFully(getStream());
   }
 }

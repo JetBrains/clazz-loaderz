@@ -37,9 +37,9 @@ public class ScanEntry extends BaseEntry {
   private final String myName;
 
   public ScanEntry(@NotNull final ResourceHolder entry,
-                   @NotNull final String name) {
+                   @NotNull final ZipEntry ze) {
     myEntry = entry;
-    myName = name;
+    myName = ze.getName();
   }
 
   @NotNull

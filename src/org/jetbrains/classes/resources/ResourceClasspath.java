@@ -17,11 +17,8 @@
 package org.jetbrains.classes.resources;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.classes.resources.entry.CompositeEntry;
-import org.jetbrains.classes.resources.entry.ResourceEntry;
-import org.jetbrains.classes.resources.entry.SizedGZipResourceEntry;
+import org.jetbrains.classes.resources.entry.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,14 +26,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static org.jetbrains.classes.resources.util.Streams.copyStreams;
+import static org.jetbrains.classes.resources.util.Streams.*;
 
 /**
  * Created 24.07.13 11:49
@@ -45,13 +39,12 @@ import static org.jetbrains.classes.resources.util.Streams.copyStreams;
  */
 public class ResourceClasspath {
   private static final String PROTOCOL = "jonnyzzz";
-  private static final int BUFFER = 65536;
 
   private final String myId = UUID.randomUUID().toString();
   private final Map<String, ResourceEntry> myCache = new HashMap<String, ResourceEntry>();
 
   public void addResource(@NotNull ResourceHolder resource) throws IOException {
-    final byte[] buff = new byte[BUFFER];
+    final byte[] buff = new byte[CACHE_SIZE];
     final ZipInputStream jos = new ZipInputStream(resource.getContent());
     try {
       while(true) {
@@ -59,21 +52,37 @@ public class ResourceClasspath {
         if (ze == null) break;
         if (ze.isDirectory()) continue;
 
-        final int entrySize = (int)ze.getSize();
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream(entrySize > 0 ? entrySize : BUFFER);
-        final int actualSize = copyStreams(buff, jos, bos);
-        bos.close();
-
-        final SizedGZipResourceEntry entry = new SizedGZipResourceEntry(actualSize, bos.toByteArray());
-
-        final String key = trimSlashes(ze.getName());
-        final ResourceEntry prev = myCache.put(key, entry);
-        if (prev != null) {
-          myCache.put(key, new CompositeEntry(entry, prev));
-        }
+        addEntry(ze, processEntry(resource, buff, jos, ze));
       }
     } finally {
-      jos.close();
+      close(jos);
+    }
+  }
+
+  @NotNull
+  private ResourceEntry processEntry(@NotNull final ResourceHolder resource,
+                                     @NotNull final byte[] buff,
+                                     @NotNull final ZipInputStream jos,
+                                     @NotNull final ZipEntry ze) throws IOException {
+    final boolean isClazz = ze.getName().endsWith(".class");
+    final int sz = readFully(jos, buff);
+
+    if (sz <= GZIP_SIZE) return new BytesEntry(Arrays.copyOf(buff, sz));
+    if (sz <= buff.length) {
+      return isClazz
+              ? new SizedGZipResourceEntry(sz, gzip(buff, 0, sz))
+              : new GZipResourceEntry(gzip(buff, 0, sz));
+    }
+
+    return new ScanEntry(resource, ze);
+  }
+
+  private void addEntry(@NotNull final ZipEntry ze,
+                        @NotNull final ResourceEntry entry) {
+    final String key = trimSlashes(ze.getName());
+    final ResourceEntry prev = myCache.put(key, entry);
+    if (prev != null) {
+      myCache.put(key, new CompositeEntry(entry, prev));
     }
   }
 
