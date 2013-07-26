@@ -30,8 +30,10 @@ public class CompositeEntry implements ResourceEntry {
   private final ResourceEntry myEntry;
   private final ResourceEntry myNextEntry;
 
-  public CompositeEntry(@NotNull final ResourceEntry entry,
-                        @NotNull final ResourceEntry nextEntry) {
+  public CompositeEntry(@NotNull ResourceEntry entry,
+                        @NotNull ResourceEntry nextEntry) {
+    if (entry.getNextEntry() != null) throw new RuntimeException("First entry should not have next child entries");
+
     myEntry = entry;
     myNextEntry = nextEntry;
   }
