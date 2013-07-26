@@ -17,19 +17,18 @@
 package org.jetbrains.classes.resources;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
-import org.testng.ITestListener;
-import org.testng.TestNG;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+
+import static org.jetbrains.classes.resources.RunTestNG.callTestNGMain;
+import static org.jetbrains.classes.resources.Streams.assertStreamsEqual;
 
 /**
  * Created 24.07.13 15:41
@@ -137,7 +136,7 @@ public class SmokeTests {
   }
 
   @Test
-  public void should_run_testNG() throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public void should_run_testNG() throws Exception {
     final ResourceClassLoader rcl = loadTestNG();
 
     //should see class
@@ -145,23 +144,15 @@ public class SmokeTests {
   }
 
   @Test
-  public void should_run_resTestNG() throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public void should_run_resTestNG() throws Exception {
     //this test requires `test-data-1` artifact to be compiled
     final ResourceClassLoader rcl = resLoadTestNG();
 
     callTestNGMain(rcl);
   }
 
-  private void callTestNGMain(ResourceClassLoader rcl) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-    //should see class
-    final Class<?> testNG = rcl.loadClass(TestNG.class.getName());
-    final Class<?> listener = rcl.loadClass(ITestListener.class.getName());
-    final Method main = testNG.getMethod("privateMain", String[].class, listener);
-    main.invoke(null, new String[]{"-junit"}, null);
-  }
-
   @Test
-  public void should_run_res_resTestNG() throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public void should_run_res_resTestNG() throws Exception {
     //this test requires `test-data-2` artifact to be compiled
     final ResourceClassLoader rcl = resResLoadTestNG();
 
@@ -174,22 +165,5 @@ public class SmokeTests {
     final ResourceClassLoader rcl = loadTestNG();
 
     rcl.loadClass(getClass().getName());
-  }
-
-  private void assertStreamsEqual(@Nullable InputStream is1, @Nullable InputStream is2) throws IOException {
-    if (is1 == null && is2 == null) return;
-
-    Assert.assertNotNull(is1);
-    Assert.assertNotNull(is2);
-    while(true) {
-      int x1 = is1.read();
-      int x2 = is2.read();
-
-      Assert.assertEquals(x1, x2);
-
-      if (x1 < 0) break;
-    }
-    is1.close();
-    is2.close();
   }
 }
