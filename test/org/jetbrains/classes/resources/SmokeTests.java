@@ -213,4 +213,33 @@ public class SmokeTests {
 
     rcl.loadClass(getClass().getName());
   }
+
+  @Test(enabled = false)
+  public void should_work_with_vcs_worker() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    //requires VCS Worker client library to be placed in testData/worker
+    final File home = new File("testData/worker");
+    final ResourceClasspath cp = new ResourceClasspath();
+
+    final File[] files = home.listFiles();
+    Assert.assertNotNull(files);
+    for (File file : files) {
+      if (file.getName().endsWith(".jar")) {
+        cp.addResource(new FileResource(file));
+      }
+    }
+
+    ResourceClassLoader rcl = new ResourceClassLoader(
+            Delegation.CALL_SELF_FIRST,
+            null,
+            cp);
+
+    final Object clientSettings = rcl.loadClass("jetbrains.vcs.api.remote.VcsClientSettings").getConstructor(String.class).newInstance("http://localhost:9888");
+
+    final Class<?> worker = rcl.loadClass("jetbrains.vcs.api.remote.impl.VcsRemoteClientFactoryImpl");
+    final Object instance = worker.newInstance();
+    final Object connection = worker.getMethod("openConnection", clientSettings.getClass()).invoke(instance, clientSettings);
+    connection.getClass().getMethod("ping").invoke(connection);
+
+    System.out.println("services = " + connection.getClass().getMethod("getAvailablePlugins").invoke(connection));
+  }
 }
