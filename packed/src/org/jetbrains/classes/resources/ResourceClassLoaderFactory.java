@@ -70,7 +70,7 @@ public class ResourceClassLoaderFactory {
     public ClazzLoader() throws IOException {
       super(null);
 
-      final ZipInputStream zis = new ZipInputStream(ResourceClassLoaderFactory.class.getClassLoader().getResourceAsStream("resource-classloader-factory.jar"));
+      final ZipInputStream zis = new ZipInputStream(ResourceClassLoaderFactory.class.getClassLoader().getResourceAsStream("resource-classloader-factory.jonnyzzz"));
       ZipEntry ze;
       while ((ze = zis.getNextEntry()) != null) {
         if (ze.isDirectory()) continue;

@@ -4,7 +4,7 @@
     <root id="root">
       <element id="archive" name="resources-loader.jar">
         <element id="module-output" name="packed" />
-        <element id="archive" name="resource-classloader-factory.jar">
+        <element id="archive" name="resource-classloader-factory.jonnyzzz">
           <element id="module-output" name="class-loaders" />
         </element>
       </element>
