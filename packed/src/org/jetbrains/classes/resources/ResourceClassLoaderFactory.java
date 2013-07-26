@@ -18,13 +18,11 @@ package org.jetbrains.classes.resources;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -34,8 +32,22 @@ import java.util.zip.ZipInputStream;
  * @author Eugene Petrenko (eugene.petrenko@jetbrains.com)
  */
 public class ResourceClassLoaderFactory {
-  public static ClassLoader forResources(@NotNull ClassLoader parent,
-                                         @NotNull URL... resources) {
+  public static ClassLoader forConfiguration(@NotNull final ClassLoader parent,
+                                             @NotNull final InputStream resourceUrlsStream) throws UnsupportedEncodingException, MalformedURLException {
+    final List<URL> urls = new ArrayList<URL>();
+    final Scanner scan = new Scanner(resourceUrlsStream, "utf-8");
+    while (scan.hasNextLine()) {
+      final String line = scan.nextLine().trim();
+      if (line.isEmpty()) continue;
+      urls.add(new URL(line));
+    }
+    scan.close();
+
+    return forResources(parent, urls.toArray(new URL[urls.size()]));
+  }
+
+  public static ClassLoader forResources(@NotNull final ClassLoader parent,
+                                         @NotNull final URL... resources) {
     final ClazzLoader cl;
     try {
       cl = new ClazzLoader();

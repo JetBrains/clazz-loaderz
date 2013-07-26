@@ -38,6 +38,11 @@ public class PackedTest {
   }
 
   @Test
+  public void abstract_library_use_case() throws IOException {
+
+  }
+
+  @Test
   public void should_work_with_vcs_worker() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
     //requires VCS Worker client library to be placed in testData/worker
     final File home = new File("testData/worker");
