@@ -71,14 +71,18 @@ public class ResourceClassLoaderFactory {
       super(null);
 
       final ZipInputStream zis = new ZipInputStream(ResourceClassLoaderFactory.class.getClassLoader().getResourceAsStream("resource-classloader-factory.jonnyzzz"));
-      ZipEntry ze;
-      while ((ze = zis.getNextEntry()) != null) {
-        if (ze.isDirectory()) continue;
-        final String name = ze.getName();
+      try {
+        ZipEntry ze;
+        while ((ze = zis.getNextEntry()) != null) {
+          if (ze.isDirectory()) continue;
+          final String name = ze.getName();
 
-        if (!name.endsWith(".class")) continue;
-        definePackage(name);
-        defineClass(zis, name);
+          if (!name.endsWith(".class")) continue;
+          definePackage(name);
+          defineClass(zis, name);
+        }
+      } finally {
+        zis.close();
       }
 
       //define class may call findClass/loadClass to resolve classes used inside
