@@ -1,13 +1,13 @@
 <component name="libraryTable">
-  <library name="packed">
+  <library name="packed-tests">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/out/artifacts/packed" />
+      <root url="file://$PROJECT_DIR$/out/artifacts/packed_test" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
       <root url="file://$PROJECT_DIR$/packed/src" />
       <root url="file://$PROJECT_DIR$/resource-clazz-loader/src" />
     </SOURCES>
-    <jarDirectory url="file://$PROJECT_DIR$/out/artifacts/packed" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/out/artifacts/packed_test" recursive="false" />
   </library>
 </component>

@@ -32,20 +32,30 @@ import java.util.zip.ZipInputStream;
  * @author Eugene Petrenko (eugene.petrenko@jetbrains.com)
  */
 public class ResourceClassLoaderFactory_VERSION {
-  public static ClassLoader forConfiguration(@NotNull final ClassLoader parent,
-                                             @NotNull final InputStream resourceUrlsStream) throws UnsupportedEncodingException, MalformedURLException {
+
+  @NotNull
+  public static ClassLoader scan(@NotNull final ClassLoader parent,
+                                 @NotNull final Scanner scan) {
     final List<URL> urls = new ArrayList<URL>();
-    final Scanner scan = new Scanner(resourceUrlsStream, "utf-8");
     while (scan.hasNextLine()) {
       final String line = scan.nextLine().trim();
       if (line.isEmpty()) continue;
-      urls.add(new URL(line));
+      final URL res = parent.getResource(line);
+      if (res == null) throw new RuntimeException("Failed to find resource: " + line);
+      urls.add(res);
     }
     scan.close();
 
     return forResources(parent, urls.toArray(new URL[urls.size()]));
   }
 
+  @NotNull
+  public static ClassLoader forConfiguration(@NotNull final ClassLoader parent,
+                                             @NotNull final InputStream resourceUrlsStream) throws UnsupportedEncodingException, MalformedURLException {
+    return scan(parent, new Scanner(resourceUrlsStream, "utf-8"));
+  }
+
+  @NotNull
   public static ClassLoader forResources(@NotNull final ClassLoader parent,
                                          @NotNull final URL... resources) {
     final ClazzLoader cl;

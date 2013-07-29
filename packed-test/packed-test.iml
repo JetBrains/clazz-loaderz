@@ -7,7 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="packed" level="project" />
+    <orderEntry type="library" name="packed-tests" level="project" />
     <orderEntry type="library" scope="TEST" name="testng" level="project" />
   </component>
 </module>

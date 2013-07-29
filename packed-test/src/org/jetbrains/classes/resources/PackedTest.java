@@ -59,8 +59,18 @@ public class PackedTest {
   }
 
   @Test
-  public void abstract_library_use_case() throws IOException {
+  public void test_classloaderFromResources() {
+    Assert.assertNotNull(classLoaderFromResources());
+  }
 
+  private ClassLoader classLoaderFromResources() {
+    try {
+      final ClassLoader parent = getClass().getClassLoader();
+      final Scanner scanner = new Scanner(parent.getResourceAsStream("factory-simple.txt"), "utf-8");
+      return (ClassLoader)parent.loadClass(scanner.nextLine()).getMethod("scan", ClassLoader.class, Scanner.class).invoke(null, parent, scanner);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to load classloader. " + e.getMessage(), e);
+    }
   }
 
   @Test

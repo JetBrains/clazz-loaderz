@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact name="packed-test">
+    <output-path>$PROJECT_DIR$/out/artifacts/packed_test</output-path>
+    <root id="root">
+      <element id="archive" name="packed-test.jar">
+        <element id="file-copy" path="$PROJECT_DIR$/packed-impl/factory-name.txt" output-file-name="factory-simple.txt" />
+      </element>
+      <element id="artifact" artifact-name="packed" />
+    </root>
+  </artifact>
+</component>
