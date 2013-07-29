@@ -8,8 +8,16 @@
       </options>
     </properties>
     <root id="root">
-      <element id="archive" name="resource_classloader_factory_VERSION.jonnyzzz">
-        <element id="module-output" name="resource-clazz-loader" />
+      <element id="directory" name="org">
+        <element id="directory" name="jetbrains">
+          <element id="directory" name="classes">
+            <element id="directory" name="resources">
+              <element id="archive" name="ResourceClassLoaderFactory_VERSION.jonnyzzz">
+                <element id="module-output" name="resource-clazz-loader" />
+              </element>
+            </element>
+          </element>
+        </element>
       </element>
     </root>
   </artifact>

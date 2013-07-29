@@ -92,7 +92,7 @@ public class ResourceClassLoaderFactory_VERSION {
     public ClazzLoader() throws IOException {
       super(null);
 
-      final ZipInputStream zis = new ZipInputStream(ResourceClassLoaderFactory_VERSION.class.getClassLoader().getResourceAsStream("resource_classloader_factory_VERSION.jonnyzzz"));
+      final ZipInputStream zis = new ZipInputStream(ResourceClassLoaderFactory_VERSION.class.getClassLoader().getResourceAsStream("org/jetbrains/classes/resources/ResourceClassLoaderFactory_VERSION.jonnyzzz"));
       try {
         ZipEntry ze;
         while ((ze = zis.getNextEntry()) != null) {
