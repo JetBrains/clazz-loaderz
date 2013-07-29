@@ -9,10 +9,8 @@
     </properties>
     <root id="root">
       <element id="archive" name="resources-loader.jar">
-        <element id="archive" name="resource-classloader-factory.jonnyzzz">
-          <element id="module-output" name="class-loaders" />
-        </element>
         <element id="module-output" name="packed-impl" />
+        <element id="artifact" artifact-name="packed-resource" />
       </element>
       <element id="file-copy" path="$PROJECT_DIR$/packed-impl/factory-name.txt" />
     </root>

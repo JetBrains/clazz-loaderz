@@ -1,0 +1,16 @@
+<component name="ArtifactManager">
+  <artifact name="packed-resource">
+    <output-path>$PROJECT_DIR$/out/artifacts/packed_resource</output-path>
+    <properties id="ant-postprocessing">
+      <options enabled="true">
+        <file>file://$PROJECT_DIR$/build/patch.xml</file>
+        <target>patch_resource_name</target>
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="resource_classloader_factory_VERSION.jonnyzzz">
+        <element id="module-output" name="class-loaders" />
+      </element>
+    </root>
+  </artifact>
+</component>

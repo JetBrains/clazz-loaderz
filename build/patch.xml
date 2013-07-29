@@ -17,4 +17,28 @@
     <replace dir="${home}/packed-impl" includes="**/*" token="_VERSION" value="_${build.number}"/>
   </target>
 
+
+  <target name="patch_resource_name">
+    <property name="artifact.out.path" value="${home}/out/artifacts/packed_resource"/> <!-- is set from IDEA -->
+    <property name="artifact.out.tmp" value="${home}/out/artifacts/packed_resource.tmp"/> <!-- is set from IDEA -->
+
+    <delete dir="${artifact.out.tmp}" failonerror="false"/>
+    <mkdir dir="${artifact.out.tmp}"/>
+
+    <copy todir="${artifact.out.tmp}">
+      <fileset dir="${artifact.out.path}" includes="**/*"/>
+      <mapper type="regexp" from="(.*_)VERSION(.*)" to="\1${build.number}\2"/>
+    </copy>
+
+    <delete>
+      <fileset dir="${artifact.out.path}" includes="**/*"/>
+    </delete>
+
+    <copy todir="${artifact.out.path}">
+      <fileset dir="${artifact.out.tmp}" includes="**/*"/>
+    </copy>
+
+    <delete dir="${artifact.out.tmp}" failonerror="false"/>
+  </target>
+
 </project>
