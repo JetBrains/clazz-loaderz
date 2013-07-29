@@ -2,3 +2,6 @@
 packed-impl/src
 packed-impl/factory-name.txt
 out
+testData/data-1
+testData/data-2
+testData/worker
