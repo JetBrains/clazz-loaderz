@@ -58,7 +58,7 @@ public class ScanEntry extends BaseEntry {
     @NotNull
     @Override
     protected byte[] processMatchingItem(@NotNull final ZipEntry ze,
-                                         @NotNull final String nane,
+                                         @NotNull final String name,
                                          @NotNull final ZipInputStream stream) throws IOException {
 
       final int entrySize = (int) ze.getSize();
