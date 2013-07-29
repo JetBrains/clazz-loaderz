@@ -35,7 +35,6 @@ public abstract class ZipScan<T, P> {
     final ZipInputStream myZip = new ZipInputStream(entry.getContent());
     ZipEntry ze;
     while ((ze = myZip.getNextEntry()) != null) {
-      if (ze == null) break;
       if (ze.isDirectory()) continue;
 
       final T t = processItem(ze, p, myZip);

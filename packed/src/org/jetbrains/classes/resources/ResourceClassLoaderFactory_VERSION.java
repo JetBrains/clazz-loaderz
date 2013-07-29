@@ -99,9 +99,9 @@ public class ResourceClassLoaderFactory_VERSION {
 
       //define class may call findClass/loadClass to resolve classes used inside
       for (String name : new ArrayList<String>(myClasses.keySet())) {
-        final byte[] bytes = myClasses.get(name);
+        final byte[] bytes = myClasses.remove(name);
         if (bytes == null) continue;
-        defineClass(name, bytes, 0, bytes.length);
+        defineClazz(name, bytes);
       }
     }
 
@@ -121,20 +121,25 @@ public class ResourceClassLoaderFactory_VERSION {
     protected Class<?> findClass(@NotNull final String name) throws ClassNotFoundException {
       final byte[] bytes = myClasses.remove(name);
       if (bytes != null) {
-        return defineClass(name, bytes, 0, bytes.length);
+        return defineClazz(name, bytes);
       }
       return super.findClass(name);
+    }
+
+    @NotNull
+    private Class<?> defineClazz(@NotNull final String name, @NotNull final byte[] bytes) {
+      return defineClass(name, bytes, 0, bytes.length);
     }
 
     private void definePackage(@NotNull final String name) {
       final int i = name.lastIndexOf('.');
       if (i >= 0) {
-        final String pkgname = name.substring(0, i);
+        final String pkgName = name.substring(0, i);
         // Check if package already loaded.
-        final Package pkg = getPackage(pkgname);
+        final Package pkg = getPackage(pkgName);
         if (pkg == null) {
           try {
-            definePackage(pkgname, null, null, null, null, null, null, null);
+            definePackage(pkgName, null, null, null, null, null, null, null);
           } catch (IllegalArgumentException e) {
             // do nothing, package already defined by some other thread
           }

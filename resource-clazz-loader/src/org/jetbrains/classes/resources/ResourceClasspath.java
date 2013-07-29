@@ -90,12 +90,11 @@ public class ResourceClasspath {
   public URL getResourceAsURL(@NotNull final String name) throws IOException {
     final ResourceEntry holder = myCache.get(name);
     if (holder == null) throw new FileNotFoundException();
-    int id = 0;
-    return createURL(name, id);
+    return createURL(name, 0);
   }
 
   @NotNull
-  private URL createURL(@NotNull final String name, int id) {
+  private URL createURL(@NotNull final String name, final int id) {
     try {
     return new URL(PROTOCOL, myId, 42 + id, "/" + name, HANDLER);
     } catch (MalformedURLException e) {
