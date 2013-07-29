@@ -9,7 +9,7 @@
     </properties>
     <root id="root">
       <element id="archive" name="resource_classloader_factory_VERSION.jonnyzzz">
-        <element id="module-output" name="class-loaders" />
+        <element id="module-output" name="resource-clazz-loader" />
       </element>
     </root>
   </artifact>

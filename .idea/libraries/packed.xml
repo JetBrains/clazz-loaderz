@@ -5,10 +5,8 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="file://$PROJECT_DIR$/src" />
-      <root url="file://$PROJECT_DIR$/test" />
       <root url="file://$PROJECT_DIR$/packed/src" />
-      <root url="file://$PROJECT_DIR$/packed-test/src" />
+      <root url="file://$PROJECT_DIR$/resource-clazz-loader/src" />
     </SOURCES>
     <jarDirectory url="file://$PROJECT_DIR$/out/artifacts/packed" recursive="false" />
   </library>
