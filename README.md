@@ -36,19 +36,29 @@ Installation
 * Add those ```.jar``` files to the main ```.jar``` resources
 * Use the following code in your app to make listed ```.jar``` files be loaded in a classloader
 
-          private ClassLoader classLoaderFromResources() {
+          private ClassLoader classLoaderFromResources(@NotNull ClassLoader parent) {
             try {
-              final ClassLoader parent = getClass().getClassLoader();
-              final Scanner scanner = new Scanner(parent.getResourceAsStream("factory-simple.txt"), "utf-8");
+              final Scanner scanner = new Scanner(parent.getResourceAsStream("renamed-libraries-list"), "utf-8");
               return (ClassLoader)parent.loadClass(scanner.nextLine()).getMethod("scan", ClassLoader.class, Scanner.class).invoke(null, parent, scanner);
             } catch (Exception e) {
               throw new RuntimeException("Failed to load classloader. " + e.getMessage(), e);
             }
           }
 
+
 Misc
 ====
-You may use Ant pre/post-action in IDEA artifacts to complete the file
+You may use the following Ant pre/post-action in IDEA artifact to generate classpath for your lib:
+
+            <pathconvert pathsep="&#xA;" property="classpath">
+              <fileset dir="${artifact.output.path}" includes="**/*.jar"/>
+              <chainedmapper>
+                <flattenmapper />
+                <globmapper from="*" to="PREFIX/*"/>
+              </chainedmapper>
+            </pathconvert>
+            <echo append="true" file="${artifact.output.path}/classpath">&#xA;${classpath}&#xA;</echo>
+
 See [hint](http://stackoverflow.com/questions/1456852/how-can-i-print-a-fileset-to-a-file-one-file-name-per-line) for more details
 
 Limitations
