@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="[TeamCity] Integration Tests" type="TestNG" factoryName="TestNG" nameChangedByUser="true">
+  <configuration default="false" name="[TeamCity] Integration Tests" type="TestNG" factoryName="TestNG">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
         <option name="PATTERN" value="org.jetbrains.classes.resources.*" />
