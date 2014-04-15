@@ -1,6 +1,7 @@
 .idea/workspace.xml
 packed-impl/src
 packed-impl/factory-name.txt
+packed-impl/clazz-loaders-build.xml
 out
 testData/data-1
 testData/data-2
