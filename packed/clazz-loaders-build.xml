@@ -1,0 +1,19 @@
+<project basedir=".">
+
+  <macrodef name="clazz-loaders-generate-classpath">
+    <attribute name="jars-directory"/>
+    <attribute name="target-path"/>
+    <attribute name="classpath-file"/>
+    <sequential>
+      <pathconvert pathsep="&#xA;" property="vcs-service-classpath">
+        <fileset dir="@{jars-directory}" includes="**/*.jar"/>
+        <chainedmapper>
+          <flattenmapper />
+          <globmapper from="*" to="@{target-path}/*"/>
+        </chainedmapper>
+      </pathconvert>
+      <echo append="true" file="@{classpath-file}">org.jetbrains.classes.resources.ResourceClassLoaderFactory_VERSION&#xA;${vcs-service-classpath}&#xA;</echo>
+    </sequential>
+  </macrodef>
+
+</project>

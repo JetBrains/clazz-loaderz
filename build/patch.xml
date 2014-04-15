@@ -13,6 +13,7 @@
     </copy>
 
     <copy file="${home}/packed/factory-name.txt" todir="${home}/packed-impl" overwrite="true"/>
+    <copy file="${home}/packed/clazz-loaders-build.xml" todir="${home}/packed-impl" overwrite="true"/>
 
     <replace dir="${home}/packed-impl" includes="**/*" token="_VERSION" value="_${build.number}"/>
   </target>
