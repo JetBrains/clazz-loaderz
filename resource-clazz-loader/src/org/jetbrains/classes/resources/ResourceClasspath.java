@@ -182,4 +182,12 @@ public class ResourceClasspath {
       return null;
     }
   };
+
+  @Override
+  public String toString() {
+    return "ResourceClasspath{" +
+            "myId='" + myId + "\', " +
+            "items=" + myCache.size() +
+            '}';
+  }
 }
