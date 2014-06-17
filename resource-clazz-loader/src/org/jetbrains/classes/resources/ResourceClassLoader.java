@@ -90,14 +90,19 @@ public class ResourceClassLoader extends ClassLoader {
     Class<?> found = findLoadedClass(name);
     if (found != null) return found;
 
-    found = myDelegation.apply(LOAD_CLASS, name);
-    if (found == null) throw new ClassNotFoundException(name);
+    synchronized (this) {
+      found = findLoadedClass(name);
+      if (found != null) return found;
 
-    if (resolve) {
-      resolveClass(found);
+      found = myDelegation.apply(LOAD_CLASS, name);
+      if (found == null) throw new ClassNotFoundException(name);
+
+      if (resolve) {
+        resolveClass(found);
+      }
+
+      return found;
     }
-
-    return found;
   }
 
   @Override
